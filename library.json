@@ -1,0 +1,20 @@
+{
+    "name": "SHT3X",
+    "keywords": "sensors",
+    "description": "SHT3X sensor driver",
+    "homepage": "https://github.com/g3rb3n/SHT3X",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/g3rb3n/SHT3X.git"
+    },
+    "version": "5.13.3",
+    "authors": {
+      "name": "Gerben van Eerten",
+      "url": "https://gerbenvaneerten.nl"
+    },
+    "exclude": [
+    ],
+    "frameworks": "arduino",
+    "platforms": "*"
+  }
+  
