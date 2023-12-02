@@ -15,6 +15,9 @@
     "exclude": [
     ],
     "frameworks": "arduino",
-    "platforms": "*"
+    "platforms": "*",
+    "dependencies":{
+        "CRC": "https://github.com/g3rb3n/CRC.git"
+    }
   }
   
