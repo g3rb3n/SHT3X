@@ -84,7 +84,7 @@ float SHT3X::kelvin()
 float SHT3X::humidity()
 {
     float temp = humidityReading;
-    return temp * 100 / 65535 - 45;
+    return temp * 100 / 65535;
 }
 
 bool SHT3X::checkCRC(uint8_t const *data, uint16_t length, uint8_t crc)
@@ -92,18 +92,35 @@ bool SHT3X::checkCRC(uint8_t const *data, uint16_t length, uint8_t crc)
     return crcMethod.crc(data, 2) == crc;
 }
 
-uint8_t SHT3X::read()
+bool SHT3X::send(uint8_t msb, uint8_t lsb)
 {
-	uint8_t data[6];
-
 	// Start I2C Transmission
 	Wire.beginTransmission(address);
 	// Send measurement command
-	Wire.write(0x2C);
-	Wire.write(0x06);
+	Wire.write(SHT3X_READ_CLOCK_STRETCHING_ENABLED_MSB);
+	Wire.write(SHT3X_READ_CLOCK_STRETCHING_ENABLED_REPEATABILITY_HIGH_LSB);
 	// Stop I2C transmission
-	if (Wire.endTransmission() != 0) return SHT3X_ERROR_WRITE;  
+	return Wire.endTransmission() == 0;
+}
 
+bool SHT3X::setHeater(bool on)
+{
+    if (on)
+        return send(SHT3X_HEATER_MSB, SHT3X_HEATER_ENABLED_LSB);
+    else
+        return send(SHT3X_HEATER_MSB, SHT3X_HEATER_DISABLED_LSB);
+}
+
+bool SHT3X::sendReadCommandStretchingHigh()
+{
+    return send(SHT3X_READ_CLOCK_STRETCHING_ENABLED_MSB, SHT3X_READ_CLOCK_STRETCHING_ENABLED_REPEATABILITY_HIGH_LSB);
+}
+
+uint8_t SHT3X::read()
+{
+    if (!sendReadCommandStretchingHigh()) return SHT3X_ERROR_WRITE;
+
+	uint8_t data[6];
 	delay(500);
 
 	// Request 6 bytes of data
@@ -119,10 +136,10 @@ uint8_t SHT3X::read()
 	if (Wire.available() != 0) return SHT3X_ERROR_READ;
 
 	// Convert the data
-    temperatureReading = data[0] << 8 + data[1];
-    humidityReading = data[3] << 8 + data[4];
     if (!checkCRC(data, 2, data[2])) return SHT3X_ERROR_CRC;
     if (!checkCRC(data + 3, 2, data[5])) return SHT3X_ERROR_CRC;
+    temperatureReading = data[0] * 256 + data[1];
+    humidityReading = data[3] * 256 + data[4];
 
 	return 0;
 }
